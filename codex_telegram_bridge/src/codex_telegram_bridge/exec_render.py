@@ -93,12 +93,19 @@ def _format_tool_call(server: str, tool: str) -> str:
     name = ".".join(part for part in (server, tool) if part)
     return name or "tool"
 
-
-def _with_id(item_id: Optional[str], line: str) -> str:
-    if item_id:
-        match = re.search(r"(?:item_)?(\\d+)", item_id)
+def _extract_numeric_id(item_id: Optional[object], fallback: Optional[int] = None) -> Optional[int]:
+    if isinstance(item_id, int):
+        return item_id
+    if isinstance(item_id, str):
+        match = re.search(r"(?:item_)?(\d+)", item_id)
         if match:
-            return f"[{match.group(1)}] {line}"
+            return int(match.group(1))
+    return fallback
+
+
+def _with_id(item_id: Optional[int], line: str) -> str:
+    if item_id is not None:
+        return f"[{item_id}] {line}"
     return f"[?] {line}"
 
 
@@ -125,7 +132,7 @@ class ExecRenderState:
     items: dict[str, dict[str, Any]] = field(default_factory=dict)
     recent_actions: deque[str] = field(default_factory=lambda: deque(maxlen=5))
     current_action: Optional[str] = None
-    current_action_id: Optional[str] = None
+    current_action_id: Optional[int] = None
     pending_reasoning: Optional[str] = None
     current_reasoning: Optional[str] = None
     last_turn: Optional[int] = None
@@ -133,14 +140,14 @@ class ExecRenderState:
 
 def _record_item(state: ExecRenderState, item: dict[str, Any]) -> None:
     item_id = item.get("id")
-    if isinstance(item_id, str) and item_id:
-        state.items[item_id] = item
-        match = re.search(r"item_(\d+)", item_id)
-        if match:
-            state.last_turn = int(match.group(1))
+    if isinstance(item_id, (int, str)):
+        state.items[str(item_id)] = item
+        numeric_id = _extract_numeric_id(item_id)
+        if numeric_id is not None:
+            state.last_turn = numeric_id
 
 
-def _set_current_action(state: ExecRenderState, item_id: Optional[str], line: str) -> bool:
+def _set_current_action(state: ExecRenderState, item_id: Optional[int], line: str) -> bool:
     changed = False
     if state.current_action != line or state.current_action_id != item_id:
         state.current_action = line
@@ -152,7 +159,7 @@ def _set_current_action(state: ExecRenderState, item_id: Optional[str], line: st
     return changed
 
 
-def _complete_action(state: ExecRenderState, item_id: Optional[str], line: str) -> bool:
+def _complete_action(state: ExecRenderState, item_id: Optional[int], line: str) -> bool:
     changed = False
     if state.current_reasoning:
         if not state.recent_actions or state.recent_actions[-1] != state.current_reasoning:
@@ -267,7 +274,7 @@ class ExecProgressRenderer:
             item = event.get("item", {}) or {}
             _record_item(self.state, item)
             itype = item.get("type")
-            item_id = item.get("id") if isinstance(item.get("id"), str) else None
+            item_id = _extract_numeric_id(item.get("id"), self.state.last_turn)
 
             if itype == "reasoning":
                 reasoning = _format_reasoning(item.get("text", ""))
