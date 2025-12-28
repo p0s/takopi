@@ -65,8 +65,6 @@ class TelegramClient:
         disable_notification: Optional[bool] = False,
         entities: Optional[List[Dict[str, Any]]] = None,
     ) -> Dict[str, Any]:
-        if len(text) > TELEGRAM_HARD_LIMIT:
-            raise ValueError("send_message received too-long text")
         params: Dict[str, Any] = {
             "chat_id": chat_id,
             "text": text,
@@ -86,8 +84,6 @@ class TelegramClient:
         text: str,
         entities: Optional[List[Dict[str, Any]]] = None,
     ) -> Dict[str, Any]:
-        if len(text) > TELEGRAM_HARD_LIMIT:
-            raise ValueError("edit_message_text received too-long text")
         params: Dict[str, Any] = {
             "chat_id": chat_id,
             "message_id": message_id,
