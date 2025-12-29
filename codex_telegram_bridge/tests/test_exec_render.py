@@ -75,3 +75,28 @@ def test_progress_renderer_renders_progress_and_final() -> None:
     assert "running:" not in final
     assert "ran:" not in final
     assert final.endswith("answer")
+
+
+def test_progress_renderer_clamps_actions_and_ignores_unknown() -> None:
+    r = ExecProgressRenderer(max_actions=3, command_width=20)
+    events = [
+        {
+            "type": "item.completed",
+            "item": {
+                "id": f"item_{i}",
+                "type": "command_execution",
+                "command": f"echo {i}",
+                "exit_code": 0,
+                "status": "completed",
+            },
+        }
+        for i in range(6)
+    ]
+
+    for evt in events:
+        assert r.note_event(evt) is True
+
+    assert len(r.recent_actions) == 3
+    assert r.recent_actions[0].startswith("3 ")
+    assert r.recent_actions[-1].startswith("5 ")
+    assert r.note_event({"type": "mystery"}) is False
