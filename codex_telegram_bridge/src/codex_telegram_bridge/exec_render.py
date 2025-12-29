@@ -8,6 +8,7 @@ from typing import Any
 
 STATUS_RUNNING = "▸"
 STATUS_DONE = "✓"
+STATUS_FAIL = "✗"
 HEADER_SEP = " · "
 HARD_BREAK = "  \n"
 
@@ -31,15 +32,17 @@ def format_elapsed(elapsed_s: float) -> str:
 def format_header(elapsed_s: float, turn: int | None, item: int | None, label: str) -> str:
     elapsed = format_elapsed(elapsed_s)
     parts = [label, elapsed]
-    if turn is not None:
-        parts.append(f"turn {turn}")
     if item is not None:
         parts.append(f"item {item}")
     return HEADER_SEP.join(parts)
 
 
 def is_command_log_line(line: str) -> bool:
-    return f"{STATUS_RUNNING} running:" in line or f"{STATUS_DONE} ran:" in line
+    return (
+        f"{STATUS_RUNNING} " in line
+        or f"{STATUS_DONE} " in line
+        or f"{STATUS_FAIL} " in line
+    )
 
 
 def extract_numeric_id(item_id: object, fallback: int | None = None) -> int | None:
@@ -89,7 +92,7 @@ def format_event(
             item = event["item"]
             item_num = extract_numeric_id(item["id"], last_item)
             last_item = item_num if item_num is not None else last_item
-            prefix = f"[{item_num if item_num is not None else '?'}] "
+            prefix = f"{item_num} "
 
             match (item["type"], etype):
                 case ("agent_message", "item.completed"):
@@ -106,7 +109,7 @@ def format_event(
                     if command_width is not None:
                         command = _shorten(command, command_width)
                     command = f"`{command}`"
-                    line = prefix + f"{STATUS_RUNNING} running: {command}"
+                    line = prefix + f"{STATUS_RUNNING} {command}"
                     return last_item, [line], line, prefix
                 case ("command_execution", "item.completed"):
                     command = item["command"]
@@ -114,8 +117,13 @@ def format_event(
                         command = _shorten(command, command_width)
                     command = f"`{command}`"
                     exit_code = item["exit_code"]
-                    exit_part = f" (exit {exit_code})" if exit_code is not None else ""
-                    line = prefix + f"{STATUS_DONE} ran: {command}{exit_part}"
+                    if exit_code == 0:
+                        status = STATUS_DONE
+                        exit_part = ""
+                    else:
+                        status = STATUS_FAIL if exit_code is not None else STATUS_DONE
+                        exit_part = f" (exit {exit_code})" if exit_code is not None else ""
+                    line = prefix + f"{status} {command}{exit_part}"
                     return last_item, [line], line, prefix
                 case ("mcp_tool_call", "item.started"):
                     name = ".".join(part for part in (item["server"], item["tool"]) if part) or "tool"
@@ -195,17 +203,12 @@ class ExecProgressRenderer:
 
     def render_progress(self, elapsed_s: float) -> str:
         header = format_header(elapsed_s, self.turn_count, self.last_item, label="working")
-        message = self._assemble(header, list(self.recent_actions))
-        return message if len(message) <= self.max_chars else header
+        return self._assemble(header, list(self.recent_actions))
 
     def render_final(self, elapsed_s: float, answer: str, status: str = "done") -> str:
         header = format_header(elapsed_s, self.turn_count, self.last_item, label=status)
-        lines = list(self.recent_actions)
-        if status == "done":
-            lines = [line for line in lines if not is_command_log_line(line)]
-        body = self._assemble(header, lines)
         answer = (answer or "").strip()
-        return body + ("\n\n" + answer if answer else "")
+        return header + ("\n\n" + answer if answer else "")
 
     @staticmethod
     def _assemble(header: str, lines: list[str]) -> str:
