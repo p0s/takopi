@@ -129,8 +129,15 @@ def _summarize_tool_result(result: Any) -> dict[str, Any] | None:
         summary["content_blocks"] = len(content)
     elif content is not None:
         summary["content_blocks"] = 1
-    if "structured" in result:
-        summary["has_structured"] = bool(result.get("structured"))
+
+    structured_key: str | None = None
+    if "structured_content" in result:
+        structured_key = "structured_content"
+    elif "structured" in result:
+        structured_key = "structured"
+
+    if structured_key is not None:
+        summary["has_structured"] = result.get(structured_key) is not None
     return summary or None
 
 
