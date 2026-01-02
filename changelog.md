@@ -1,5 +1,15 @@
 # changelog
 
+## v0.5.0 (unreleased)
+
+### changes
+
+- TBD
+
+### fixes
+
+- TBD
+
 ## v0.4.0 (2026-01-02)
 
 ### changes
