@@ -32,9 +32,10 @@ def test_check_setup_marks_missing_codex(monkeypatch, tmp_path: Path) -> None:
     assert result.ok is False
 
 
-def test_check_setup_marks_missing_config(monkeypatch) -> None:
+def test_check_setup_marks_missing_config(monkeypatch, tmp_path: Path) -> None:
     backend = engines.get_backend("codex")
     monkeypatch.setattr(onboarding.shutil, "which", lambda _name: "/usr/bin/codex")
+    monkeypatch.setattr(onboarding, "HOME_CONFIG_PATH", tmp_path / "takopi.toml")
 
     def _raise() -> None:
         raise onboarding.ConfigError("Missing config file")
@@ -68,4 +69,4 @@ def test_check_setup_marks_invalid_chat_id(monkeypatch, tmp_path: Path) -> None:
     result = onboarding.check_setup(backend)
 
     titles = {issue.title for issue in result.issues}
-    assert "create a config" in titles
+    assert "configure telegram" in titles
