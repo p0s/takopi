@@ -20,6 +20,8 @@ parallel runs across threads, per thread queue support.
 
 optional voice note transcription for telegram (routes transcript like typed text).
 
+per-project chat routing: assign different telegram chats to different projects.
+
 ## requirements
 
 - `uv` for installation (`curl -LsSf https://astral.sh/uv/install.sh | sh`)
@@ -32,7 +34,6 @@ optional voice note transcription for telegram (routes transcript like typed tex
 
 ## install
 
-- `uv python install 3.14`
 - `uv tool install -U takopi` to install as `takopi`
 - or try it with `uvx takopi@latest`
 
@@ -62,8 +63,6 @@ transport = "telegram"
 bot_token = "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
 chat_id = 123456789
 voice_transcription = true
-
-# set OPENAI_API_KEY in your environment for voice transcription
 
 [codex]
 # optional: profile from ~/.codex/config.toml
@@ -111,8 +110,10 @@ path = "~/dev/z80"
 worktrees_dir = ".worktrees"
 default_engine = "codex"
 worktree_base = "master"
-chat_id = -123456789        # optional, project chat id
+chat_id = -123456789
 ```
+
+set `chat_id` to route messages from that chat to the project automatically.
 
 note: the default `worktrees_dir` lives inside the repo, so `.worktrees/` will
 show up as untracked unless you ignore it (add to `.gitignore` or
@@ -157,15 +158,7 @@ if you prefer no notifications, `--no-final-notify` edits the progress message i
 
 takopi supports entrypoint-based plugins for engines, transports, and command backends.
 
-see:
-
-- `docs/plugins.md`
-- `docs/public-api.md`
-
-## notes
-
-* the bot only responds to the primary `chat_id` plus any per-project `chat_id`
-* run only one takopi instance per bot token: multiple instances will race telegram's `getUpdates` offsets and cause missed updates
+see [`docs/plugins.md`](docs/plugins.md) and [`docs/public-api.md`](docs/public-api.md).
 
 ## development
 
