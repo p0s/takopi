@@ -1,5 +1,20 @@
 # changelog
 
+## v0.13.0 (2026-01-09)
+
+### changes
+
+- add per-project chat routing [#76](https://github.com/banteg/takopi/pull/76)
+
+### fixes
+
+- hardcode codex exec flags [#75](https://github.com/banteg/takopi/pull/75)
+- reuse project root for current branch when resolving worktrees [#77](https://github.com/banteg/takopi/pull/77)
+
+### docs
+
+- normalize casing in the readme and changelog
+
 ## v0.12.0 (2026-01-09)
 
 ### changes
