@@ -24,26 +24,17 @@ per-project chat routing: assign different telegram chats to different projects.
 
 ## requirements
 
-- `uv` for installation (`curl -LsSf https://astral.sh/uv/install.sh | sh`)
-- python 3.14+ (uv can install it: `uv python install 3.14`)
-- at least one engine installed:
-  - `codex` on PATH (`npm install -g @openai/codex` or `brew install codex`)
-  - `claude` on PATH (`npm install -g @anthropic-ai/claude-code`)
-  - `opencode` on PATH (`npm install -g opencode-ai@latest`)
-  - `pi` on PATH (`npm install -g @mariozechner/pi-coding-agent`)
+`uv` for installation (`curl -LsSf https://astral.sh/uv/install.sh | sh`), python 3.14+ (`uv python install 3.14`), and at least one engine on PATH:
+
+`codex` (`npm install -g @openai/codex` or `brew install codex`), `claude` (`npm install -g @anthropic-ai/claude-code`), `opencode` (`npm install -g opencode-ai@latest`), `pi` (`npm install -g @mariozechner/pi-coding-agent`).
 
 ## install
 
-- `uv tool install -U takopi` to install as `takopi`
-- or try it with `uvx takopi@latest`
+`uv tool install -U takopi` or try it with `uvx takopi@latest`.
 
 ## setup
 
-run `takopi` and follow the interactive prompts. it will:
-
-- help you create a bot token (via @BotFather)
-- capture your `chat_id` from the most recent message you send to the bot
-- check installed agents and set a default engine
+run `takopi` and follow the interactive prompts. it will help you create a bot token (via [@BotFather](https://t.me/BotFather)), capture your `chat_id` from the most recent message you send to the bot, and set a default engine.
 
 to re-run onboarding (and overwrite config), use `takopi --onboard`.
 
