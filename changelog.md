@@ -1,5 +1,11 @@
 # changelog
 
+## v0.21.4 (2026-01-22)
+
+### changes
+
+- add allowed user gate to telegram [#179](https://github.com/banteg/takopi/pull/179)
+
 ## v0.21.3 (2026-01-21)
 
 ### fixes
